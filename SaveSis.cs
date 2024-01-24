@@ -30,7 +30,7 @@ public class SaveSis : MonoBehaviour
     {
         Data data = new Data();
         data.npcs = npcsData;
-        data.jogador = playerData;
+        data.player = playerData;
         data.gameData = worldData;
         string dn = JsonUtility.ToJson(npcsData);
         string dj = JsonUtility.ToJson(playerData);
