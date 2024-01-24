@@ -13,12 +13,10 @@ public class Cena : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-            Debug.Log("Teste");
     }
 
     // Update is called once per frame
     void Update()
     {
-            Debug.Log("Testinho");
     }
 }
