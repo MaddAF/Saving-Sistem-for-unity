@@ -11,7 +11,7 @@ using System.IO.Pipes;
 public class NPCData { //Add the npc parameters you want to save
     // Don`t remove these-----
     public int Id;
-    public GameObject objeto;
+    public GameObject object;
     public Vector3 NpcPos;
     public string currentSceneNPC;
     //----------------------------
@@ -53,6 +53,6 @@ public class PlayerData {
 [System.Serializable] public class Data {
     // If you want to add extra classes you want to save separately, create the classes like the others and add them here:
     public List<NPCData> npcs;
-    public PlayerData jogador;
+    public PlayerData player;
     public GameData gameData;
 }
