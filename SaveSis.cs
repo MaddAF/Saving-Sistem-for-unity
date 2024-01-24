@@ -15,65 +15,75 @@ using UnityEngine.Windows.WebCam;
 
 public class SaveSis : MonoBehaviour
 {
-    private string cenaAtual;
-    private GameObject[] todosObjetos;
+    private string currentScene;
+    private GameObject[] allObjects;
     // Start is called before the first frame update
-    void Start()
+    void Start() //On start it gets all objects in your game and the current scene and saves it into a variable.
     {
-        todosObjetos = UnityEngine.Object.FindObjectsOfType<GameObject>();
-        cenaAtual = SceneManager.GetActiveScene().name;
+        allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
+        currentScene = SceneManager.GetActiveScene().name;
     }
 
     // Update is called once per frame
 
-    public void Save(List<NPCData> dadosNpcs, PlayerData dadosJogador, GameData dadosMundo) {
+    public void Save(List<NPCData> npcsData, PlayerData playerData, GameData worldData) // Saves all data onto the apropriate file path
+    {
         Data data = new Data();
-        data.npcs = dadosNpcs;
-        data.jogador = dadosJogador;
-        data.gameData = dadosMundo;
-        //string dn = JsonUtility.ToJson(dadosNpcs);
-        string dj = JsonUtility.ToJson(dadosJogador);
-        string dm = JsonUtility.ToJson(dadosMundo);
+        data.npcs = npcsData;
+        data.jogador = playerData;
+        data.gameData = worldData;
+        string dn = JsonUtility.ToJson(npcsData);
+        string dj = JsonUtility.ToJson(playerData);
+        string dm = JsonUtility.ToJson(worldData);
         string dd = JsonUtility.ToJson(data);
+        File.WriteAllText(Application.dataPath + "/NpcsSave", dn);
         File.WriteAllText(Application.dataPath + "/PlayerSave", dj);
         File.WriteAllText(Application.dataPath + "/WorldSave", dm);
         File.WriteAllText(Application.dataPath + "/SaveData", dd);
+        Debug.Log("Game saved successfully");
     }
 
-    public void Load() {
-        foreach (GameObject item in todosObjetos){
-            if (item.GetComponent<PlayerClass>() != null) {
+    public void Load() //checks the allObjects variable for objects with either the PlayerClass or NpcClass components and transforms them based
+    {                  // on the data that is saved in the save files.
+        foreach (GameObject item in allObjects)
+        {
+            if (item.GetComponent<PlayerClass>() != null)
+            {
                 transformPlayer(item);
             }
-            if (item.GetComponent<NpcClass>() != null) {
+            if (item.GetComponent<NpcClass>() != null)
+            {
                 transformNpc(item);
             }
         }
-        Debug.Log("Jogo carregado com sucesso");
+        Debug.Log("Game loaded successfully");
     }
 
-    private void transformNpc(GameObject personagem){
-        NpcClass cpf = personagem.GetComponent<NpcClass>();
-        NPCData dados = cpf.npcData;
-        personagem.transform.position = dados.NpcPos;
-        if (personagem.GetComponent<DialogueTrigger>() != null){
-            personagem.GetComponent<DialogueTrigger>().messages = dados.dialog.messages;
-            personagem.GetComponent<DialogueTrigger>().actors = dados.dialog.actors;
+    private void transformNpc(GameObject npcChar) // Auxiliary function that tranforms a single npc to the state saved on the npc file
+    {
+        NpcClass classComponent = npcChar.GetComponent<NpcClass>();
+        NPCData data_ = classComponent.npcData;
+        npcChar.transform.position = data_.NpcPos;
+        if (npcChar.GetComponent<DialogueTrigger>() != null)
+        {
+            npcChar.GetComponent<DialogueTrigger>().messages = data_.dialog.messages;
+            npcChar.GetComponent<DialogueTrigger>().actors = data_.dialog.actors;
         }
     }
-    private void transformPlayer(GameObject personagem) {
-        PlayerClass cpf = personagem.GetComponent<PlayerClass>();
-        PlayerData dados = cpf.playerData;
-        personagem.transform.position = dados.PlayerPos;
+    private void transformPlayer(GameObject playerChar)// Auxiliary function that tranforms a single player to the state saved on the player file
+    {
+        PlayerClass classComponent = playerChar.GetComponent<PlayerClass>();
+        PlayerData data_ = classComponent.playerData;
+        playerChar.transform.position = data_.PlayerPos;
     }
 
-    public PlayerData getAtualPlayer() {
+    public PlayerData getCurrentPlayer() // If you only have one player, this function can be used to get the data of it
+    {                                    // Note: this only works if the player is active on the current scene, which most likely is
         PlayerData result = new PlayerData();
-        todosObjetos = GameObject.FindObjectsOfType<GameObject>();
+        allObjects = GameObject.FindObjectsOfType<GameObject>();
 
-        foreach (GameObject i in todosObjetos)
+        foreach (GameObject i in allObjects)
         {
-            //Debug.Log(i);
             if (i.activeInHierarchy && (i.GetComponent<PlayerClass>() != null))
             {
                 PlayerClass n = i.GetComponent<PlayerClass>();
@@ -83,22 +93,23 @@ public class SaveSis : MonoBehaviour
         return result;
     }
 
-    public List<NPCData> GetNpcs()
-    {
+    public List<NPCData> GetNpcs() // This is a particularly usefull function, it returns the data of all active npc. This can be useful to forcibly change
+    {                              // Something about the npcs like is shown in the exemple. I often use this if i need an npc to have a different dialog
+                                   // the next time a load an specific scene.
         List<GameObject> lista = new List<GameObject>();
         List<NPCData> result = new List<NPCData>();
-        todosObjetos = GameObject.FindObjectsOfType<GameObject>();
-        
-        foreach (GameObject i in todosObjetos)
+        allObjects = GameObject.FindObjectsOfType<GameObject>();
+
+        foreach (GameObject i in allObjects)
         {
-            //Debug.Log(i);
-            if (i.activeInHierarchy && (i.GetComponent<NpcClass>()!= null)) {
+            if (i.activeInHierarchy && (i.GetComponent<NpcClass>() != null))
+            {
                 NpcClass n = i.GetComponent<NpcClass>();
                 if (n.id == 1)
                 {
                     Debug.Log("a");
                     NPCData kid = n.npcData;
-                    Message msg = new Message(0,"aaaaaaa", true, "FalaAnnie", "FalaAnnie");
+                    Message msg = new Message(0, "aaaaaaa", true, "FalaAnnie", "FalaAnnie");
                     kid.dialog.messages[0] = msg;
                 }
                 result.Add(n.npcData);
@@ -107,14 +118,15 @@ public class SaveSis : MonoBehaviour
         return result;
     }
 
-    public GameData GetGameData()
+    public GameData GetGameData() // Returns the saved World data
     {
         string saveStringGame = File.ReadAllText(Application.dataPath + "/WorldSave");
         GameData loadedGameData = JsonUtility.FromJson<GameData>(saveStringGame);
         return loadedGameData;
     }
 
-    public Data LoadAll() {
+    public Data LoadAll() // Returns every data saved as an instance of the Data class
+    {
 
         string saveStringData = File.ReadAllText(Application.dataPath + "/SaveData");
         Data loadedSaveData = JsonUtility.FromJson<Data>(saveStringData);
@@ -122,7 +134,8 @@ public class SaveSis : MonoBehaviour
 
     }
 
-    public NPCData GetIndividuo(int index) {
+    public NPCData GetIndividuo(int index) // Gets the NPCData of an npc with a specific id
+    {
         Data data = LoadAll();
         List<NPCData> allNpcs = data.npcs;
         NPCData individuo = new NPCData();
