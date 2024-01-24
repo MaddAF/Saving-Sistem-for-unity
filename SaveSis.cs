@@ -64,17 +64,13 @@ public class SaveSis : MonoBehaviour
         NpcClass classComponent = npcChar.GetComponent<NpcClass>();
         NPCData data_ = classComponent.npcData;
         npcChar.transform.position = data_.NpcPos;
-        if (npcChar.GetComponent<DialogueTrigger>() != null)
-        {
-            npcChar.GetComponent<DialogueTrigger>().messages = data_.dialog.messages;
-            npcChar.GetComponent<DialogueTrigger>().actors = data_.dialog.actors;
-        }
+        
     }
     private void transformPlayer(GameObject playerChar)// Auxiliary function that tranforms a single player to the state saved on the player file
     {
         PlayerClass classComponent = playerChar.GetComponent<PlayerClass>();
         PlayerData data_ = classComponent.playerData;
-        playerChar.transform.position = data_.PlayerPos;
+        playerChar.transform.position = data_.PlayerPos; // do this for every changable parameter you want to load
     }
 
     public PlayerData getCurrentPlayer() // If you only have one player, this function can be used to get the data of it
@@ -105,12 +101,14 @@ public class SaveSis : MonoBehaviour
             if (i.activeInHierarchy && (i.GetComponent<NpcClass>() != null))
             {
                 NpcClass n = i.GetComponent<NpcClass>();
-                if (n.id == 1)
+                //exemple:
+                if (n.id == 1) // Here i want to change the position of the NPC with the id of 1
                 {
-                    Debug.Log("a");
-                    NPCData kid = n.npcData;
-                    Message msg = new Message(0, "aaaaaaa", true, "FalaAnnie", "FalaAnnie");
-                    kid.dialog.messages[0] = msg;
+                    NPCData john = n.npcData;
+                    Vector3 newPos = new Vector3(0.0, 1.0, 0.0);
+                    john.transform.position = newPos; // this will change the position of the npc john directly on the save file, so the next time you load
+                                                      // his position will be (0.0, 1.0, 0.0), note that if you want this to change only on a certain scene
+                                                      // you`ll need to creat another version of this code for other scenes
                 }
                 result.Add(n.npcData);
             }
@@ -127,25 +125,24 @@ public class SaveSis : MonoBehaviour
 
     public Data LoadAll() // Returns every data saved as an instance of the Data class
     {
-
         string saveStringData = File.ReadAllText(Application.dataPath + "/SaveData");
         Data loadedSaveData = JsonUtility.FromJson<Data>(saveStringData);
         return loadedSaveData;
 
     }
 
-    public NPCData GetIndividuo(int index) // Gets the NPCData of an npc with a specific id
+    public NPCData GetIndividual(int index) // Gets the NPCData of an npc with a specific id
     {
         Data data = LoadAll();
         List<NPCData> allNpcs = data.npcs;
-        NPCData individuo = new NPCData();
+        NPCData individual = new NPCData();
         foreach (NPCData i in allNpcs)
         {
             if (i.Id == index)
             {
-                individuo = i;
+                individual = i;
             }
         }
-        return individuo;
+        return individual;
     }
 }
